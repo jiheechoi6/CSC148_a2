@@ -196,8 +196,6 @@ class Block:
                 child._update_children_positions(c_pos[i])
                 i += 1
 
-        return None
-
     def smashable(self) -> bool:
         """Return True iff this block can be smashed.
 
@@ -321,8 +319,10 @@ class Block:
 
         Return True iff this Block's colour was changed.
         """
-        # TODO: Implement me
-        return True  # FIXME
+        if len(self.children) == 0 and self.level == self.max_depth:
+            self.colour = colour
+            return True
+        return False
 
     def combine(self) -> bool:
         """Turn this Block into a leaf based on the majority colour of its
@@ -337,8 +337,25 @@ class Block:
 
         Return True iff this Block was turned into a leaf node.
         """
-        # TODO: Implement me
-        return True  # FIXME
+        # check if block is valid for combine
+        if self.level != (self.max_depth - 1) or len(self.children) == 0:
+            return False
+
+        color_score = [0, 0, 0, 0]
+        for child in self.children:
+            color_score[COLOUR_LIST.index(child.colour)] += 1
+
+        # check if there is no majority color
+        maj = max(color_score)
+        if maj in color_score:
+            return False
+
+        # update block colour
+        self.colour = COLOUR_LIST[color_score.index(maj)]
+        # remove children
+        del self.children[:]
+
+        return True
 
     def create_copy(self) -> Block:
         """Return a new Block that is a deep copy of this Block.
