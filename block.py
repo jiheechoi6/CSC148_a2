@@ -187,8 +187,16 @@ class Block:
         <position> is the (x, y) coordinates of the upper-left corner of this
         Block.
         """
-        # TODO: Implement me
-        return  # FIXME
+        self.position = position
+
+        if len(self.children) != 0:
+            c_pos = self._children_positions()
+            i = 0
+            for child in self.children:
+                child._update_children_positions(c_pos[i])
+                i += 1
+
+        return None
 
     def smashable(self) -> bool:
         """Return True iff this block can be smashed.
@@ -245,8 +253,38 @@ class Block:
 
         Precondition: <direction> is either 0 or 1
         """
-        # TODO: Implement me
-        return True  # FIXME
+        # check if the block has children
+        if len(self.children) == 0 or self.children is None:
+            return False
+
+        c1, c2, c3, c4 = 0, 0, 0, 0
+        l1, l2, l3, l4 = (), (), (), ()
+        half = self.size // 2
+        # horizontal swap
+        if direction == 0:
+            c1, c2, c3, c4 = 1, 2, 0, 3
+            l1, l2, l3, l4 = (half, 0), (half, half), (0, 0), (0, half)
+        # vertical swap
+        if direction == 1:
+            c1, c2, c3, c4 = 3, 2, 0, 1
+            l1, l2, l3, l4 = (half, 0), (0, 0), (half, half), (0, half)
+            d = 3
+
+        # alter positions first
+        self.children[c1]._update_children_positions(l1)
+        self.children[c2]._update_children_positions(l2)
+        self.children[c3]._update_children_positions(l3)
+        self.children[c4]._update_children_positions(l4)
+
+        # update children list
+        temp1 = self.children[c3]
+        temp2 = self.children[c4]
+        self.children[c3] = self.children[c1]
+        self.children[c4] = self.children[c2]
+        self.children[c1] = temp1
+        self.children[c2] = temp2
+
+        return True
 
     def rotate(self, direction: int) -> bool:
         """Rotate this Block and all its descendants.
