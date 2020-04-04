@@ -45,7 +45,8 @@ def generate_goals(num_goals: int) -> List[Goal]:
     >>> goals[0].colour == goals[1].colour
     False
     """
-    goal_type = random.choice(['perimeter', 'blob'])
+    # goal_type = random.choice(['perimeter', 'blob'])
+    goal_type = 'perimeter'
     goals = []
 
     i = 0
@@ -92,13 +93,31 @@ def _flatten(block: Block) -> List[List[Tuple[int, int, int]]]:
 
     L[0][0] represents the unit cell in the upper left corner of the Block.
     """
-    lst = []
-    if block.children is []:
-        lst.append([block.colour])
+    length = int(2 ** (block.max_depth - block.level))
+    lst = [[(1, 1, 1) for x in range(length)] for y in range(length)]
+    if len(block.children) == 0:
+        for i in range(length):
+            for j in range(length):
+                lst[i][j] = block.colour
         return lst
     else:
-        for i in block.children:
-            lst.append(_flatten(i))
+        for i in range(4):
+            temp = _flatten(block.children[i])
+            col_offset = 0
+            row_offset = 0
+
+            if i == 2:
+                col_offset = length // 2
+            elif i == 0:
+                row_offset = length // 2
+            elif i == 3:
+                row_offset = length // 2
+                col_offset = length // 2
+
+            for j in range(length//2):
+                for k in range(length//2):
+                    lst[row_offset+j][col_offset+k] = temp[j][k]
+
     return lst
 
 
@@ -147,7 +166,7 @@ class PerimeterGoal(Goal):
                     score += 1
                 if p == board.size and bord[i][p] == self.colour:
                     score += 1
-        return score # FIXME
+        return score
 
     def description(self) -> str:
         return 'The perimeter target for this game'  # FIXME
