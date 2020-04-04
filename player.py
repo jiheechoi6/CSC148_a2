@@ -102,6 +102,10 @@ def _get_block(block: Block, location: Tuple[int, int], level: int) -> \
     if block.level == level:
         return block
     elif block.level < level:
+        # if no children, <level> is greater than the level of deepest block
+        # then current block is the deepest block
+        if len(block.children) == 0:
+            return block
         for child in block.children:
             inner_block = _get_block(child, location, level)
             if inner_block is not None:
@@ -249,7 +253,7 @@ class RandomPlayer(Player):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self._proceed = True
 
-    def generate_move(self, board: Block) ->\
+    def generate_move(self, board: Block) -> \
             Optional[Tuple[str, Optional[int], Block]]:
         """Return a valid, randomly generated move.
 
@@ -261,10 +265,40 @@ class RandomPlayer(Player):
         if not self._proceed:
             return None  # Do not remove
 
-        # TODO: Implement Me
+        # first choose the type of action
+        action = random.choice([ROTATE_CLOCKWISE, ROTATE_COUNTER_CLOCKWISE,
+                                SWAP_HORIZONTAL, SWAP_VERTICAL, SMASH, PAINT,
+                                COMBINE])
+        # choose a block
+        level = random.randint(board.level, board.max_depth)
+        x = random.randint(board.position[0], board.position[0] + board.size)
+        y = random.randint(board.position[1], board.position[1] + board.size)
+
+        target_block = _get_block(board, [x, y], level)
+
+        # assign the created move
+        move = (action[0], action[1], target_block)
+
+        # check if the move is valid. enter recursion if not valid
+        target_copy = target_block.create_copy()
+        if action == ROTATE_CLOCKWISE or ROTATE_COUNTER_CLOCKWISE:
+            if not target_copy.rotate(action[1]):
+                move = self.generate_move(board)
+        elif action == SWAP_HORIZONTAL or SWAP_VERTICAL:
+            if not target_copy.swap(action[1]):
+                move = self.generate_move(board)
+        elif action == SMASH:
+            if not target_copy.smash():
+                move = self.generate_move(board)
+        elif action == PAINT:
+            if not target_copy.paint((0, 0, 0)):
+                move = self.generate_move(board)
+        else:
+            if not target_copy.combine():
+                move = self.generate_move(board)
 
         self._proceed = False  # Must set to False before returning!
-        return None  # FIXME
+        return move
 
 
 class SmartPlayer(Player):
@@ -287,7 +321,7 @@ class SmartPlayer(Player):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self._proceed = True
 
-    def generate_move(self, board: Block) ->\
+    def generate_move(self, board: Block) -> \
             Optional[Tuple[str, Optional[int], Block]]:
         """Return a valid move by assessing multiple valid moves and choosing
         the move that results in the highest score for this player's goal (i.e.,
@@ -302,17 +336,50 @@ class SmartPlayer(Player):
         if not self._proceed:
             return None  # Do not remove
 
-        # TODO: Implement Me
+        # set the current score as the highest score for now
+        highest_score = self.goal.score(board)
+        h = highest_score  # later used to check if the score changes
+
+        # create a random player to produce random moves
+        random_player = RandomPlayer(0, self.goal)
+
+        # parse through n random moves (n = self.difficulty)
+        i = 0
+        move = ()
+        while i < self._difficulty:
+            random_move = random_player.generate_move(board)
+            copy = move[2].create_copy()
+            # check score for this move
+            if move[0] == 'rotate':
+                copy.rotate(move[1])
+            elif move[0] == 'swap':
+                copy.swap(move[1])
+            elif move[0] == 'smash':
+                copy.smash()
+            elif move[0] == 'paint':
+                copy.paint((119, 44, 58))
+            else:
+                copy.combine()
+            # check score after random move is applied
+            if self.goal.score(copy) > highest_score:
+                highest_score = self.goal.score(copy)
+                move = random_move
+
+        # if no better move was found, then move is PASS
+        if highest_score == h:
+            move = (PASS[0], None, board)
 
         self._proceed = False  # Must set to False before returning!
-        return None  # FIXME
+        return move
 
 
 if __name__ == '__main__':
     import doctest
+
     doctest.testmod()
 
     import python_ta
+
     python_ta.check_all(config={
         'allowed-io': ['process_event'],
         'allowed-import-modules': [
