@@ -89,19 +89,14 @@ def _get_block(block: Block, location: Tuple[int, int], level: int) -> \
     Preconditions:
         - 0 <= level <= max_depth
     """
-    top_right = (block.position[0] + block.size, block.position[1])
-    bottom_left = (block.position[0], block.position[1] + block.size)
-    # except for two special cases (top right, left bottom)
-    if location != top_right:
-        if location != bottom_left:
-            # check x position
-            if block.position[0] > location[0] or location[0] >= \
-                    (block.position[0] + block.size):
-                return None
-            # check y position
-            if block.position[1] > location[1] or location[1] >= \
-                    block.position[1] + block.size:
-                return None
+    # check x position
+    if block.position[0] > location[0] or location[0] >= \
+            (block.position[0] + block.size):
+        return None
+    # check y position
+    if block.position[1] > location[1] or location[1] >= \
+            block.position[1] + block.size:
+        return None
 
     # check level
     if block.level == level:
@@ -244,7 +239,7 @@ class RandomPlayer(Player):
     _proceed: bool
 
     def __init__(self, player_id: int, goal: Goal) -> None:
-        # TODO: Implement Me
+        Player.__init__(self, player_id, goal)
         self._proceed = False
 
     def get_selected_block(self, board: Block) -> Optional[Block]:
@@ -278,10 +273,12 @@ class SmartPlayer(Player):
     #   True when the player should make a move, False when the player should
     #   wait.
     _proceed: bool
+    _difficulty: int
 
     def __init__(self, player_id: int, goal: Goal, difficulty: int) -> None:
-        # TODO: Implement Me
+        Player.__init__(self, player_id, goal)
         self._proceed = False
+        self._difficulty = difficulty
 
     def get_selected_block(self, board: Block) -> Optional[Block]:
         return None
