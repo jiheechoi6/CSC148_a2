@@ -162,9 +162,9 @@ class PerimeterGoal(Goal):
                     score += 1
                 if p == 0 and bord[i][p] == self.colour:
                     score += 1
-                if i == board.size and bord[i][p] == self.colour:
+                if i == len(bord)-1 and bord[i][p] == self.colour:
                     score += 1
-                if p == board.size and bord[i][p] == self.colour:
+                if p == len(bord[i])-1 and bord[i][p] == self.colour:
                     score += 1
         return score
 
