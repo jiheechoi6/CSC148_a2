@@ -187,8 +187,14 @@ class Block:
         <position> is the (x, y) coordinates of the upper-left corner of this
         Block.
         """
-        # TODO: Implement me
-        return  # FIXME
+        self.position = position
+
+        if len(self.children) != 0:
+            c_pos = self._children_positions()
+            i = 0
+            for child in self.children:
+                child._update_children_positions(c_pos[i])
+                i += 1
 
     def smashable(self) -> bool:
         """Return True iff this block can be smashed.
@@ -245,8 +251,30 @@ class Block:
 
         Precondition: <direction> is either 0 or 1
         """
-        # TODO: Implement me
-        return True  # FIXME
+        # check if the block has children
+        if len(self.children) == 0 or self.children is None:
+            return False
+
+        c1, c2, c3, c4 = 0, 0, 0, 0
+        # horizontal swap
+        if direction == 0:
+            c1, c2, c3, c4 = 1, 2, 0, 3
+        # vertical swap
+        if direction == 1:
+            c1, c2, c3, c4 = 3, 2, 0, 1
+
+        # update children list
+        temp1 = self.children[c3]
+        temp2 = self.children[c4]
+        self.children[c3] = self.children[c1]
+        self.children[c4] = self.children[c2]
+        self.children[c1] = temp1
+        self.children[c2] = temp2
+
+        # alter position
+        self._update_children_positions(self.position)
+
+        return True
 
     def rotate(self, direction: int) -> bool:
         """Rotate this Block and all its descendants.
@@ -258,8 +286,32 @@ class Block:
 
         Precondition: <direction> is either 1 or 3.
         """
-        # TODO: Implement me
-        return True  # FIXME
+        if len(self.children) == 0 or self.children is None:
+            return False
+
+        if direction == 1:
+            # alter children
+            temp = self.children[0]
+            self.children[0], self.children[1], self.children[2] = \
+                self.children[1], self.children[2], self.children[3]
+            self.children[3] = temp
+
+        if direction == 3:
+            # alter children
+            temp = self.children[3]
+            self.children[3], self.children[2], self.children[1] = \
+                self.children[2], self.children[1], self.children[0]
+            self.children[0] = temp
+
+        # update position of children
+        self._update_children_positions(self.position)
+
+        # rotate descendant children
+        for child in self.children:
+            if len(child.children) != 0:
+                child.rotate(direction)
+
+        return True
 
     def paint(self, colour: Tuple[int, int, int]) -> bool:
         """Change this Block's colour iff it is a leaf at a level of max_depth
@@ -267,8 +319,10 @@ class Block:
 
         Return True iff this Block's colour was changed.
         """
-        # TODO: Implement me
-        return True  # FIXME
+        if len(self.children) == 0 and self.level == self.max_depth:
+            self.colour = colour
+            return True
+        return False
 
     def combine(self) -> bool:
         """Turn this Block into a leaf based on the majority colour of its
@@ -283,8 +337,25 @@ class Block:
 
         Return True iff this Block was turned into a leaf node.
         """
-        # TODO: Implement me
-        return True  # FIXME
+        # check if block is valid for combine
+        if self.level != (self.max_depth - 1) or len(self.children) == 0:
+            return False
+
+        color_score = [0, 0, 0, 0]
+        for child in self.children:
+            color_score[COLOUR_LIST.index(child.colour)] += 1
+
+        # check if there is no majority color
+        maj = max(color_score)
+        if maj in color_score:
+            return False
+
+        # update block colour
+        self.colour = COLOUR_LIST[color_score.index(maj)]
+        # remove children
+        del self.children[:]
+
+        return True
 
     def create_copy(self) -> Block:
         """Return a new Block that is a deep copy of this Block.
