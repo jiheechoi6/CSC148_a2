@@ -158,13 +158,24 @@ class PerimeterGoal(Goal):
         bord = _flatten(board)
         for i in range(len(bord)):
             for p in range(len(bord[i])):
-                if i == 0 and bord[i][p] == self.colour:
+                if i == 0 and p == 0 and bord[i][p] == self.colour:
+                    score += 2
+                elif i == 0 and p == len(bord[i])-1 and bord[i][p] \
+                        == self.colour:
+                    score += 2
+                elif i == len(bord[i])-1 and p == len(bord[i])-1 and \
+                        bord[i][p] == self.colour:
+                    score += 2
+                elif i == len(bord[i])-1 and p == 0 and bord[i][p] \
+                        == self.colour:
+                    score += 2
+                elif i == 0 and bord[i][p] == self.colour:
                     score += 1
-                if p == 0 and bord[i][p] == self.colour:
+                elif p == 0 and bord[i][p] == self.colour:
                     score += 1
-                if i == len(bord)-1 and bord[i][p] == self.colour:
+                elif i == len(bord)-1 and bord[i][p] == self.colour:
                     score += 1
-                if p == len(bord[i])-1 and bord[i][p] == self.colour:
+                elif p == len(bord[i])-1 and bord[i][p] == self.colour:
                     score += 1
         return score
 
