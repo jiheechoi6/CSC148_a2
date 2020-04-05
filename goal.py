@@ -153,7 +153,10 @@ class PerimeterGoal(Goal):
     child class of goal used to calculate perimeter goal
     """
     def score(self, board: Block) -> int:
-        # TODO: Implement me
+        """Return the current score for this goal on the given board.
+
+        The score is always greater than or equal to 0.
+        """
         score = 0
         bord = _flatten(board)
         for i in range(len(bord)):
@@ -180,14 +183,25 @@ class PerimeterGoal(Goal):
         return score
 
     def description(self) -> str:
+        """Return a description of this goal.
+        """
         return 'The perimeter target for this game'  # FIXME
 
 
 class BlobGoal(Goal):
     """
-    Class for calculating blob goal
+    A child class of goal in the game of Blocky.
+
+    === Attributes ===
+    colour:
+        The target colour for this goal, that is the colour to which
+        this goal applies.
     """
     def score(self, board: Block) -> int:
+        """Return the current score for this goal on the given board.
+
+        The score is always greater than or equal to 0.
+        """
         flat = _flatten(board)
         visited = [[-1 for _ in range(len(flat))] for _ in range(len(flat))]
         results = []
@@ -238,6 +252,8 @@ class BlobGoal(Goal):
         return count
 
     def description(self) -> str:
+        """Return a description of this goal.
+        """
         return 'The blob size target for this game'
 
 
