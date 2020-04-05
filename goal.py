@@ -43,8 +43,7 @@ def generate_goals(num_goals: int) -> List[Goal]:
     >>> goals[0].colour == goals[1].colour
     False
     """
-    # goal_type = random.choice(['perimeter', 'blob'])
-    goal_type = 'blob'
+    goal_type = random.choice(['perimeter', 'blob'])
     goals = []
 
     i = 0
