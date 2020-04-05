@@ -92,17 +92,20 @@ def _flatten(block: Block) -> List[List[Tuple[int, int, int]]]:
     L[0][0] represents the unit cell in the upper left corner of the Block.
     """
     length = int(2 ** (block.max_depth - block.level))
+    # Creating a 2d array of the desired proportions
     lst = [[(1, 1, 1) for _ in range(length)] for _ in range(length)]
     if len(block.children) == 0:
+        # Base case
         for i in range(length):
             for j in range(length):
                 lst[i][j] = block.colour
         return lst
     for i in range(4):
+        # Recursive calls
         temp = _flatten(block.children[i])
         col_offset = 0
         row_offset = 0
-
+        # Setting up the 2d array like the block
         if i == 2:
             col_offset = length // 2
         elif i == 0:
@@ -150,7 +153,8 @@ class Goal:
 
 class PerimeterGoal(Goal):
     """
-    child class of goal used to calculate perimeter goal
+    child class of goal used to calculate perimeter goal evaluates the score
+    based on the amount of blocks on the edge
     """
     def score(self, board: Block) -> int:
         """Return the current score for this goal on the given board.
@@ -161,6 +165,7 @@ class PerimeterGoal(Goal):
         bord = _flatten(board)
         for i in range(len(bord)):
             for p in range(len(bord[i])):
+                # Adding the points accordingly
                 if i == 0 and p == 0 and bord[i][p] == self.colour:
                     score += 2
                 elif i == 0 and p == len(bord[i])-1 and bord[i][p] \
@@ -190,8 +195,8 @@ class PerimeterGoal(Goal):
 
 class BlobGoal(Goal):
     """
-    A child class of goal in the game of Blocky.
-
+    A child class of goal in the game of Blocky. Calculated based on the biggest
+    blob of target colour.
     === Attributes ===
     colour:
         The target colour for this goal, that is the colour to which
@@ -207,8 +212,10 @@ class BlobGoal(Goal):
         results = []
         for i in range(len(flat)):
             for p in range(len(flat)):
+                # Adding all possible results to a list
                 results.append(self._undiscovered_blob_size((i, p),
                                                             flat, visited))
+        # Returing the largest
         return max(results)
 
     def _undiscovered_blob_size(self, pos: Tuple[int, int],
@@ -231,6 +238,7 @@ class BlobGoal(Goal):
         Update <visited> so that all cells that are visited are marked with
         either 0 or 1.
         """
+        # Bases cases
         if pos[0] < 0 or pos[0] >= len(board) or pos[1] < 0 or pos[1] \
                 >= len(board):
             return 0
@@ -240,6 +248,7 @@ class BlobGoal(Goal):
             visited[pos[0]][pos[1]] = 0
             return 0
         else:
+            # Recursive calls
             visited[pos[0]][pos[1]] = 1
             count = 1 + self._undiscovered_blob_size((pos[0] - 1, pos[1]),
                                                      board, visited) + \
