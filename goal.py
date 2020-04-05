@@ -22,11 +22,9 @@ Misha Schwartz, and Jaisie Sin
 This file contains the hierarchy of Goal classes.
 """
 from __future__ import annotations
-import math
 import random
 from typing import List, Tuple
-from block import Block
-from settings import colour_name, COLOUR_LIST
+from settings import COLOUR_LIST
 
 
 def generate_goals(num_goals: int) -> List[Goal]:
@@ -46,7 +44,7 @@ def generate_goals(num_goals: int) -> List[Goal]:
     False
     """
     # goal_type = random.choice(['perimeter', 'blob'])
-    goal_type = 'perimeter'
+    goal_type = 'blob'
     goals = []
 
     i = 0
@@ -94,29 +92,28 @@ def _flatten(block: Block) -> List[List[Tuple[int, int, int]]]:
     L[0][0] represents the unit cell in the upper left corner of the Block.
     """
     length = int(2 ** (block.max_depth - block.level))
-    lst = [[(1, 1, 1) for x in range(length)] for y in range(length)]
+    lst = [[(1, 1, 1) for _ in range(length)] for _ in range(length)]
     if len(block.children) == 0:
         for i in range(length):
             for j in range(length):
                 lst[i][j] = block.colour
         return lst
-    else:
-        for i in range(4):
-            temp = _flatten(block.children[i])
-            col_offset = 0
-            row_offset = 0
+    for i in range(4):
+        temp = _flatten(block.children[i])
+        col_offset = 0
+        row_offset = 0
 
-            if i == 2:
-                col_offset = length // 2
-            elif i == 0:
-                row_offset = length // 2
-            elif i == 3:
-                row_offset = length // 2
-                col_offset = length // 2
+        if i == 2:
+            col_offset = length // 2
+        elif i == 0:
+            row_offset = length // 2
+        elif i == 3:
+            row_offset = length // 2
+            col_offset = length // 2
 
-            for j in range(length//2):
-                for k in range(length//2):
-                    lst[row_offset+j][col_offset+k] = temp[j][k]
+        for j in range(length//2):
+            for k in range(length//2):
+                lst[row_offset+j][col_offset+k] = temp[j][k]
 
     return lst
 
@@ -152,6 +149,9 @@ class Goal:
 
 
 class PerimeterGoal(Goal):
+    """
+    child class of goal used to calculate perimeter goal
+    """
     def score(self, board: Block) -> int:
         # TODO: Implement me
         score = 0
@@ -184,9 +184,18 @@ class PerimeterGoal(Goal):
 
 
 class BlobGoal(Goal):
+    """
+    Class for calculating blob goal
+    """
     def score(self, board: Block) -> int:
-        # TODO: Implement me
-        return 148  # FIXME
+        flat = _flatten(board)
+        visited = [[-1 for _ in range(len(flat))] for _ in range(len(flat))]
+        results = []
+        for i in range(len(flat)):
+            for p in range(len(flat)):
+                results.append(self._undiscovered_blob_size((i, p),
+                                                            flat, visited))
+        return max(results)
 
     def _undiscovered_blob_size(self, pos: Tuple[int, int],
                                 board: List[List[Tuple[int, int, int]]],
@@ -208,8 +217,26 @@ class BlobGoal(Goal):
         Update <visited> so that all cells that are visited are marked with
         either 0 or 1.
         """
-        # TODO: Implement me
-        pass  # FIXME
+        if pos[0] < 0 or pos[0] >= len(board) or pos[1] < 0 or pos[1] \
+                >= len(board):
+            return 0
+        if visited[pos[0]][pos[1]] != -1:
+            return 0
+        if board[pos[0]][pos[1]] != self.colour:
+            visited[pos[0]][pos[1]] = 0
+            return 0
+        else:
+            count = 1
+            visited[pos[0]][pos[1]] = 1
+            count += self._undiscovered_blob_size((pos[0] - 1, pos[1]),
+                                                  board, visited)
+            count += self._undiscovered_blob_size((pos[0] + 1, pos[1]),
+                                                  board, visited)
+            count += self._undiscovered_blob_size((pos[0], pos[1] - 1),
+                                                  board, visited)
+            count += self._undiscovered_blob_size((pos[0], pos[1] + 1),
+                                                  board, visited)
+        return count
 
     def description(self) -> str:
         return 'The blob size target for this game'
