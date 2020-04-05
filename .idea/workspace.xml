@@ -27,8 +27,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/goal.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="824">
-              <caret line="229" selection-start-line="229" selection-end-line="229" />
+            <state relative-caret-position="464">
+              <caret line="256" selection-start-line="256" selection-end-line="256" />
             </state>
           </provider>
         </entry>
@@ -93,6 +93,34 @@
       </list>
     </option>
   </component>
+  <component name="RunManager">
+    <configuration name="goal" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="CSC148_a2" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/goal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.goal" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -153,8 +181,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/goal.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="824">
-          <caret line="229" selection-start-line="229" selection-end-line="229" />
+        <state relative-caret-position="464">
+          <caret line="256" selection-start-line="256" selection-end-line="256" />
         </state>
       </provider>
     </entry>
