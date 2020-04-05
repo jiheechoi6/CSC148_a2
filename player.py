@@ -166,6 +166,43 @@ def _create_move(action: Tuple[str, Optional[int]], block: Block) -> \
     return action[0], action[1], block
 
 
+def _make_random_move(board: Block) -> Optional[Tuple[str, Optional[int],
+                                                      Block]]:
+    # first choose the type of action
+    action = random.choice([ROTATE_CLOCKWISE, ROTATE_COUNTER_CLOCKWISE,
+                            SWAP_HORIZONTAL, SWAP_VERTICAL, SMASH, PAINT,
+                            COMBINE])
+    # choose a block
+    level = random.randint(board.level, board.max_depth)
+    x = random.randint(board.position[0], board.position[0] + board.size - 1)
+    y = random.randint(board.position[1], board.position[1] + board.size - 1)
+
+    target_block = _get_block(board, [x, y], level)
+
+    # assign the created move
+    move = (action[0], action[1], target_block)
+
+    # check if the move is valid. Enter recursion if not valid
+    target_copy = target_block.create_copy()
+    if action == ROTATE_CLOCKWISE or ROTATE_COUNTER_CLOCKWISE:
+        if not target_copy.rotate(action[1]):
+            move = _make_random_move(board)
+    elif action == SWAP_HORIZONTAL or SWAP_VERTICAL:
+        if not target_copy.swap(action[1]):
+            move = _make_random_move(board)
+    elif action == SMASH:
+        if not target_copy.smash():
+            move = _make_random_move(board)
+    elif action == PAINT:
+        if not target_copy.paint((0, 0, 0)):
+            move = _make_random_move(board)
+    else:
+        if not target_copy.combine():
+            move = _make_random_move(board)
+
+    return move
+
+
 class HumanPlayer(Player):
     """A human player.
     """
@@ -236,10 +273,14 @@ class HumanPlayer(Player):
 
 
 class RandomPlayer(Player):
-    # === Private Attributes ===
-    # _proceed:
-    #   True when the player should make a move, False when the player should
-    #   wait.
+    """A player that makes random valid moves when its turn is given.
+    Subclass of class Player.
+
+     === Private Attributes ===
+    _proceed:
+      True when the player should make a move, False when the player should
+      wait.
+    """
     _proceed: bool
 
     def __init__(self, player_id: int, goal: Goal) -> None:
@@ -265,47 +306,25 @@ class RandomPlayer(Player):
         if not self._proceed:
             return None  # Do not remove
 
-        # first choose the type of action
-        action = random.choice([ROTATE_CLOCKWISE, ROTATE_COUNTER_CLOCKWISE,
-                                SWAP_HORIZONTAL, SWAP_VERTICAL, SMASH, PAINT,
-                                COMBINE])
-        # choose a block
-        level = random.randint(board.level, board.max_depth)
-        x = random.randint(board.position[0], board.position[0] + board.size)
-        y = random.randint(board.position[1], board.position[1] + board.size)
-
-        target_block = _get_block(board, [x, y], level)
-
-        # assign the created move
-        move = (action[0], action[1], target_block)
-
-        # check if the move is valid. enter recursion if not valid
-        target_copy = target_block.create_copy()
-        if action == ROTATE_CLOCKWISE or ROTATE_COUNTER_CLOCKWISE:
-            if not target_copy.rotate(action[1]):
-                move = self.generate_move(board)
-        elif action == SWAP_HORIZONTAL or SWAP_VERTICAL:
-            if not target_copy.swap(action[1]):
-                move = self.generate_move(board)
-        elif action == SMASH:
-            if not target_copy.smash():
-                move = self.generate_move(board)
-        elif action == PAINT:
-            if not target_copy.paint((0, 0, 0)):
-                move = self.generate_move(board)
-        else:
-            if not target_copy.combine():
-                move = self.generate_move(board)
+        move = _make_random_move(board)
 
         self._proceed = False  # Must set to False before returning!
         return move
 
 
 class SmartPlayer(Player):
-    # === Private Attributes ===
-    # _proceed:
-    #   True when the player should make a move, False when the player should
-    #   wait.
+    """A player that makes the smartest valid move out of <_difficulty> number
+    of random valid moves. Subclass of class Player.
+
+     === Private Attributes ===
+    _proceed:
+      True when the player should make a move, False when the player should
+      wait.
+    _difficulty:
+      difficulty level of beating the player. This player generates
+      <_difficulty> number of random moves and chooses the move that gives the
+      highest score
+    """
     _proceed: bool
     _difficulty: int
 
@@ -340,23 +359,20 @@ class SmartPlayer(Player):
         highest_score = self.goal.score(board)
         h = highest_score  # later used to check if the score changes
 
-        # create a random player to produce random moves
-        random_player = RandomPlayer(0, self.goal)
-
         # parse through n random moves (n = self.difficulty)
         i = 0
         move = ()
         while i < self._difficulty:
-            random_move = random_player.generate_move(board)
-            copy = move[2].create_copy()
+            random_move = _make_random_move(board)
+            copy = random_move[2].create_copy()
             # check score for this move
-            if move[0] == 'rotate':
-                copy.rotate(move[1])
-            elif move[0] == 'swap':
-                copy.swap(move[1])
-            elif move[0] == 'smash':
+            if random_move[0] == 'rotate':
+                copy.rotate(random_move[1])
+            elif random_move[0] == 'swap':
+                copy.swap(random_move[1])
+            elif random_move[0] == 'smash':
                 copy.smash()
-            elif move[0] == 'paint':
+            elif random_move[0] == 'paint':
                 copy.paint((119, 44, 58))
             else:
                 copy.combine()
@@ -364,6 +380,7 @@ class SmartPlayer(Player):
             if self.goal.score(copy) > highest_score:
                 highest_score = self.goal.score(copy)
                 move = random_move
+            i += 1
 
         # if no better move was found, then move is PASS
         if highest_score == h:
