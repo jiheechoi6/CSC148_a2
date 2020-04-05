@@ -76,7 +76,7 @@ class Block:
         The deepest level allowed in the overall block structure.
     children:
         The blocks into which this block is subdivided. The children are
-        stored in this order: upper-right child, upper-left child,
+        stored in this order: upper-riht child, upper-left child,
         lower-left child, lower-right child.
 
     === Representation Invariants===
@@ -187,11 +187,14 @@ class Block:
         <position> is the (x, y) coordinates of the upper-left corner of this
         Block.
         """
+        # update the parent position
         self.position = position
 
+        # if the parent block has children, enter recursion and update position
         if len(self.children) != 0:
             c_pos = self._children_positions()
             i = 0
+            # update position of each child
             for child in self.children:
                 child._update_children_positions(c_pos[i])
                 i += 1
@@ -319,9 +322,12 @@ class Block:
 
         Return True iff this Block's colour was changed.
         """
+        # switch color if the block is valid for this action
         if len(self.children) == 0 and self.level == self.max_depth:
             self.colour = colour
             return True
+
+        # else return false
         return False
 
     def combine(self) -> bool:
@@ -341,13 +347,18 @@ class Block:
         if self.level != (self.max_depth - 1) or len(self.children) == 0:
             return False
 
+        # make a list of color occurrence
         color_score = [0, 0, 0, 0]
         for child in self.children:
             color_score[COLOUR_LIST.index(child.colour)] += 1
 
         # check if there is no majority color
         maj = max(color_score)
-        if maj in color_score:
+        check = 0
+        for score in color_score:
+            if maj == score:
+                check += 1
+        if check > 1:
             return False
 
         # update block colour
@@ -362,8 +373,20 @@ class Block:
 
         Remember that a deep copy has new blocks (not aliases) at every level.
         """
-        # TODO: Implement me
-        pass  # FIXME
+        # create parent block
+        copy = Block(self.position, self.size, self.colour, self.level,
+                     self.max_depth)
+
+        # end if it has no children
+        if len(self.children) == 0:
+            return copy
+        # enter recursion to copy descendant blocks
+        else:
+            for c in self.children:
+                child_copy = c.create_copy()
+                copy.children.append(child_copy)
+
+        return copy
 
 
 if __name__ == '__main__':
