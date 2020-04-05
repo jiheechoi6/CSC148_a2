@@ -24,6 +24,7 @@ This file contains the hierarchy of Goal classes.
 from __future__ import annotations
 import random
 from typing import List, Tuple
+from block import Block
 from settings import COLOUR_LIST
 
 
@@ -225,16 +226,15 @@ class BlobGoal(Goal):
             visited[pos[0]][pos[1]] = 0
             return 0
         else:
-            count = 1
             visited[pos[0]][pos[1]] = 1
-            count += self._undiscovered_blob_size((pos[0] - 1, pos[1]),
-                                                  board, visited)
-            count += self._undiscovered_blob_size((pos[0] + 1, pos[1]),
-                                                  board, visited)
-            count += self._undiscovered_blob_size((pos[0], pos[1] - 1),
-                                                  board, visited)
-            count += self._undiscovered_blob_size((pos[0], pos[1] + 1),
-                                                  board, visited)
+            count = 1 + self._undiscovered_blob_size((pos[0] - 1, pos[1]),
+                                                     board, visited) + \
+                    self._undiscovered_blob_size((pos[0] + 1, pos[1]), board,
+                                                 visited) + \
+                    self._undiscovered_blob_size((pos[0], pos[1] - 1), board,
+                                                 visited) + \
+                    self._undiscovered_blob_size((pos[0], pos[1] + 1), board,
+                                                 visited)
         return count
 
     def description(self) -> str:
